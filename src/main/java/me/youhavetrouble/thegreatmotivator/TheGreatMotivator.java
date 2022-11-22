@@ -2,7 +2,9 @@ package me.youhavetrouble.thegreatmotivator;
 
 import me.youhavetrouble.thegreatmotivator.storage.SQLiteStorage;
 import me.youhavetrouble.thegreatmotivator.storage.TGMStorage;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
@@ -11,6 +13,7 @@ import java.util.UUID;
 
 public final class TheGreatMotivator extends JavaPlugin {
 
+    private static Economy vaultEcon = null;
     private TGMConfig config;
     private TGMStorage storage;
 
@@ -35,6 +38,12 @@ public final class TheGreatMotivator extends JavaPlugin {
         } catch (SQLException e) {
             getLogger().severe("Cannot connect to database. Disabling.");
             return;
+        }
+
+        if (!setupEconomy() ) {
+            getLogger().info("Vault not detected");
+        } else {
+            getLogger().info("Vault detected");
         }
 
         getServer().getPluginManager().registerEvents(new PlayerTrackerListener(), this);
@@ -70,5 +79,17 @@ public final class TheGreatMotivator extends JavaPlugin {
 
     protected TGMStorage getStorage() {
         return storage;
+    }
+
+    private boolean setupEconomy() {
+        if (getServer().getPluginManager().getPlugin("Vault") == null) return false;
+        RegisteredServiceProvider<Economy> serviceProvider = getServer().getServicesManager().getRegistration(Economy.class);
+        if (serviceProvider == null) return false;
+        vaultEcon = serviceProvider.getProvider();
+        return vaultEcon != null;
+    }
+
+    public static Economy getVaultEconomy() {
+        return vaultEcon;
     }
 }
