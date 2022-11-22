@@ -1,8 +1,8 @@
 name: TheGreatMotivator
-version: '${project.version}'
+version: "${project.version}"
 main: me.youhavetrouble.thegreatmotivator.TheGreatMotivator
 api-version: 1.19
 softdepend: [ Vault ]
 authors: [ YouHaveTrouble ]
-description: '${project.description}'
-website: '${url}'
+description: "${project.description}"
+website: "${url}"
