@@ -23,13 +23,11 @@ public class SQLiteStorage implements TGMStorage {
     }
 
     @Override
-    public void createTables() {
+    public void createTables() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `tgm_balances` (player_uuid varchar(36) NOT NULL PRIMARY KEY, `balance` double);")
         ) {
             statement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 

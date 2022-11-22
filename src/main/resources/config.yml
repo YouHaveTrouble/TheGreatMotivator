@@ -1,4 +1,5 @@
 database: "sqlite"
+saveInterval: 10
 
 mysql:
   host: "localhost"
