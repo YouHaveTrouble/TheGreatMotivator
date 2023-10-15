@@ -99,12 +99,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.MilkBowl</groupId>
-            <artifactId>VaultAPI</artifactId>
-            <version>1.7</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>5.0.1</version>
@@ -113,7 +107,7 @@
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.39.4.1</version>
+            <version>3.42.0.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -128,7 +122,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+        <dependency>
+            <groupId>com.github.YouHaveTrouble</groupId>
+            <artifactId>MoneyPitAPI</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
 
     </dependencies>
 </project>

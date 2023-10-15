@@ -1,19 +1,17 @@
 package me.youhavetrouble.thegreatmotivator;
 
+import me.youhavetrouble.moneypit.Economy;
 import me.youhavetrouble.thegreatmotivator.storage.SQLiteStorage;
 import me.youhavetrouble.thegreatmotivator.storage.TGMStorage;
-import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.RegisteredServiceProvider;
+
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.UUID;
 
-public final class TheGreatMotivator extends JavaPlugin {
+public class TheGreatMotivator extends JavaPlugin {
 
-    private static Economy vaultEcon = null;
+    private static Economy economy = null;
     private TGMConfig config;
     private TGMStorage storage;
 
@@ -25,6 +23,7 @@ public final class TheGreatMotivator extends JavaPlugin {
         storage = switch (config.getDatabaseType()) {
             case SQLITE -> new SQLiteStorage();
             case MYSQL -> null;
+            default -> null;
         };
 
         if (storage == null) {
@@ -40,35 +39,18 @@ public final class TheGreatMotivator extends JavaPlugin {
             return;
         }
 
-        if (!setupEconomy() ) {
-            getLogger().info("Vault not detected");
+        if (getServer().getPluginManager().isPluginEnabled("MoneyPit") ) {
+            getLogger().info("MoneyPit not detected");
+            getServer().getServicesManager().register(Economy.class, new TGMEconomy(this), this, ServicePriority.Highest);
         } else {
-            getLogger().info("Vault detected");
+            getLogger().info("MoneyPit detected");
         }
-
-        getServer().getPluginManager().registerEvents(new PlayerTrackerListener(), this);
-
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
-            for (Map.Entry<UUID, TGMPlayer> entry : TGMPlayer.getPlayerCache().entrySet()) {
-                if (entry.getValue().isDirty()) {
-                    storage.savePlayerBalance(entry.getKey(), entry.getValue().getBalance());
-                }
-                if (Bukkit.getPlayer(entry.getKey()) == null) {
-                    TGMPlayer.untrackPlayer(entry.getKey());
-                }
-            }
-        }, config.getSaveInterval() * 20L, config.getSaveInterval() * 20L);
 
     }
 
     @Override
     public void onDisable() {
         getLogger().info("Saving player data...");
-        for (Map.Entry<UUID, TGMPlayer> entry : TGMPlayer.getPlayerCache().entrySet()) {
-            if (entry.getValue().isDirty()) {
-                storage.savePlayerBalance(entry.getKey(), entry.getValue().getBalance());
-            }
-        }
     }
 
     private void reloadTGMConfig() {
@@ -81,15 +63,4 @@ public final class TheGreatMotivator extends JavaPlugin {
         return storage;
     }
 
-    private boolean setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) return false;
-        RegisteredServiceProvider<Economy> serviceProvider = getServer().getServicesManager().getRegistration(Economy.class);
-        if (serviceProvider == null) return false;
-        vaultEcon = serviceProvider.getProvider();
-        return vaultEcon != null;
-    }
-
-    public static Economy getVaultEconomy() {
-        return vaultEcon;
-    }
 }
