@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class TGMEconomy implements Economy {
 
-    TheGreatMotivator plugin;
+    private final TheGreatMotivator plugin;
 
     protected TGMEconomy(TheGreatMotivator plugin) {
         this.plugin = plugin;
@@ -31,24 +31,35 @@ public class TGMEconomy implements Economy {
 
     @Override
     public CompletableFuture<Long> getBalance(UUID uuid) {
+        return CompletableFuture.supplyAsync(() -> plugin.getStorage().getPlayerBalance(uuid));
 
-        plugin.getStorage().getPlayerBalance(uuid);
-
-        return null;
     }
 
     @Override
     public CompletableFuture<EconomyResponse> deposit(UUID uuid, long l) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+             Long newBalance = plugin.getStorage().addToPlayerBalance(uuid, l);
+             return new EconomyResponse(l, newBalance, EconomyResponse.ResponseType.SUCCESS, "");
+        }).exceptionally(e -> {
+            return new EconomyResponse(l, 0, EconomyResponse.ResponseType.FAILURE, e.getMessage());
+        });
     }
 
     @Override
     public CompletableFuture<EconomyResponse> withdraw(UUID uuid, long l) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            Long newBalance = plugin.getStorage().subtractFromPlayerBalance(uuid, l);
+            return new EconomyResponse(l, newBalance, EconomyResponse.ResponseType.SUCCESS, "");
+        }).exceptionally(e -> {
+            return new EconomyResponse(l, 0, EconomyResponse.ResponseType.FAILURE, e.getMessage());
+        });
     }
 
     @Override
     public CompletableFuture<Boolean> has(UUID uuid, long l) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            Long balance = plugin.getStorage().getPlayerBalance(uuid);
+            return balance != null && balance >= l;
+        });
     }
 }

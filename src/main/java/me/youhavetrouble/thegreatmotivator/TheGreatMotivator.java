@@ -40,10 +40,8 @@ public class TheGreatMotivator extends JavaPlugin {
         }
 
         if (getServer().getPluginManager().isPluginEnabled("MoneyPit") ) {
-            getLogger().info("MoneyPit not detected");
+            getLogger().info("MoneyPit detected, registering economy service");
             getServer().getServicesManager().register(Economy.class, new TGMEconomy(this), this, ServicePriority.Highest);
-        } else {
-            getLogger().info("MoneyPit detected");
         }
 
     }
