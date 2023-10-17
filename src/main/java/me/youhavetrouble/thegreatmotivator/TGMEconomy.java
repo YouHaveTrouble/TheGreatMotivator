@@ -2,6 +2,8 @@ package me.youhavetrouble.thegreatmotivator;
 
 import me.youhavetrouble.moneypit.Economy;
 import me.youhavetrouble.moneypit.EconomyResponse;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -57,9 +59,9 @@ public class TGMEconomy implements Economy {
 
     @Override
     public CompletableFuture<Boolean> has(UUID uuid, long l) {
-        return CompletableFuture.supplyAsync(() -> {
-            Long balance = plugin.getStorage().getPlayerBalance(uuid);
-            return balance != null && balance >= l;
+        return TheGreatMotivator.getPlayerBalance(Bukkit.getOfflinePlayer(uuid)).thenApply(balance -> {
+            if (balance == null) return false;
+            return balance >= l;
         });
     }
 }
