@@ -20,9 +20,13 @@ public class SQLiteStorage implements TGMStorage {
         config.setJdbcUrl(url);
         config.setMaximumPoolSize(1);
         dataSource = new HikariDataSource(config);
+        try {
+            createTables();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
     }
 
-    @Override
     public void createTables() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `balances` (player_uuid varchar(36) NOT NULL PRIMARY KEY, `balance` long);")
@@ -32,35 +36,15 @@ public class SQLiteStorage implements TGMStorage {
     }
 
     @Override
-    public Long addToPlayerBalance(UUID playerUuid, long amount) {
+    public void savePlayerBalance(UUID playerUuid, long balance) {
         try (Connection connection = dataSource.getConnection();
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO `balances` (player_uuid, balance) VALUES (?, ?) ON CONFLICT (player_uuid) DO UPDATE SET balance = balance + ?;")) {
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO `balances` (player_uuid, balance) VALUES (?, ?) ON CONFLICT(player_uuid) DO UPDATE SET balance = ?;")) {
             statement.setString(1, playerUuid.toString());
-            statement.setLong(2, amount);
-            statement.setLong(3, amount);
-            int affectedRows = statement.executeUpdate();
-            if (affectedRows == 0) return null;
-            ResultSet generatedKeys = statement.getGeneratedKeys();
-            if (generatedKeys.next()) return generatedKeys.getLong(1);
-            return null;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    @Override
-    public Long subtractFromPlayerBalance(UUID playerUuid, long amount) {
-        try (Connection connection = dataSource.getConnection();
-            PreparedStatement statement = connection.prepareStatement("UPDATE `balances` SET balance = CASE WHEN (balance - ? >= 0) THEN balance - ? ELSE balance END, balance as current_value WHERE id = ?;")) {
-            statement.setLong(1, amount);
-            statement.setString(2, playerUuid.toString());
-            statement.setLong(3, amount);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) return resultSet.getLong("current_value");
-            return null;
-        } catch (SQLException e) {
-            return null;
+            statement.setLong(2, balance);
+            statement.setLong(3, balance);
+            statement.executeUpdate();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
     }
 

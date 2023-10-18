@@ -3,8 +3,6 @@ package me.youhavetrouble.thegreatmotivator;
 import me.youhavetrouble.moneypit.Economy;
 import me.youhavetrouble.moneypit.EconomyResponse;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -33,35 +31,26 @@ public class TGMEconomy implements Economy {
 
     @Override
     public CompletableFuture<Long> getBalance(UUID uuid) {
-        return CompletableFuture.supplyAsync(() -> plugin.getStorage().getPlayerBalance(uuid));
-
+        return plugin.getPlayerBalance(Bukkit.getOfflinePlayer(uuid)).thenApply(TGMPlayerBalance::getBalance);
     }
 
     @Override
     public CompletableFuture<EconomyResponse> deposit(UUID uuid, long l) {
-        return CompletableFuture.supplyAsync(() -> {
-             Long newBalance = plugin.getStorage().addToPlayerBalance(uuid, l);
-             return new EconomyResponse(l, newBalance, EconomyResponse.ResponseType.SUCCESS, "");
-        }).exceptionally(e -> {
-            return new EconomyResponse(l, 0, EconomyResponse.ResponseType.FAILURE, e.getMessage());
-        });
+        long value = Math.max(0, l);
+        return plugin.addToPlayersBalance(Bukkit.getOfflinePlayer(uuid), value);
     }
 
     @Override
     public CompletableFuture<EconomyResponse> withdraw(UUID uuid, long l) {
-        return CompletableFuture.supplyAsync(() -> {
-            Long newBalance = plugin.getStorage().subtractFromPlayerBalance(uuid, l);
-            return new EconomyResponse(l, newBalance, EconomyResponse.ResponseType.SUCCESS, "");
-        }).exceptionally(e -> {
-            return new EconomyResponse(l, 0, EconomyResponse.ResponseType.FAILURE, e.getMessage());
-        });
+        long value = Math.max(0, l);
+        return plugin.withdrawFromPlayersBalance(Bukkit.getOfflinePlayer(uuid), value);
     }
 
     @Override
     public CompletableFuture<Boolean> has(UUID uuid, long l) {
-        return TheGreatMotivator.getPlayerBalance(Bukkit.getOfflinePlayer(uuid)).thenApply(balance -> {
+        return plugin.getPlayerBalance(Bukkit.getOfflinePlayer(uuid)).thenApply(balance -> {
             if (balance == null) return false;
-            return balance >= l;
+            return balance.getBalance() >= l;
         });
     }
 }
