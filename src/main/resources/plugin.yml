@@ -7,3 +7,4 @@ depend: [ MoneyPit ]
 authors: [ YouHaveTrouble ]
 description: "${project.description}"
 website: "${url}"
+folia-supported: true
