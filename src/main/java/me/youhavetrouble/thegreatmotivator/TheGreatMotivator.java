@@ -1,7 +1,10 @@
 package me.youhavetrouble.thegreatmotivator;
 
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import me.youhavetrouble.moneypit.Economy;
 import me.youhavetrouble.moneypit.EconomyResponse;
+import me.youhavetrouble.thegreatmotivator.command.TGMCommand;
 import me.youhavetrouble.thegreatmotivator.storage.SQLiteStorage;
 import me.youhavetrouble.thegreatmotivator.storage.TGMStorage;
 
@@ -49,6 +52,14 @@ public class TheGreatMotivator extends JavaPlugin implements Listener {
             getServer().getServicesManager().register(Economy.class, new TGMEconomy(this), this, ServicePriority.Highest);
         }
 
+        CommandAPI.onLoad(
+                new CommandAPIBukkitConfig(this)
+                        .shouldHookPaperReload(true)
+        );
+        CommandAPI.onEnable();
+
+        new TGMCommand(this);
+
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -72,6 +83,7 @@ public class TheGreatMotivator extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
+        CommandAPI.onDisable();
         getLogger().info("Saving player data...");
     }
 
@@ -81,16 +93,12 @@ public class TheGreatMotivator extends JavaPlugin implements Listener {
         config = new TGMConfig(getConfig());
     }
 
-    protected static TGMStorage getStorage() {
-        return storage;
-    }
-
     /**
      * Gets the player's balance from the cache, or loads it from the database if it's not cached.
      * @param offlinePlayer The player to get the balance of.
      * @return A CompletableFuture that will be completed with the player's balance.
      */
-    protected CompletableFuture<TGMPlayerBalance> getPlayerBalance(OfflinePlayer offlinePlayer) {
+    public CompletableFuture<TGMPlayerBalance> getPlayerBalance(OfflinePlayer offlinePlayer) {
         if (cachedBalances.containsKey(offlinePlayer.getUniqueId())) {
             return CompletableFuture.completedFuture(cachedBalances.get(offlinePlayer.getUniqueId()));
         }
@@ -99,7 +107,7 @@ public class TheGreatMotivator extends JavaPlugin implements Listener {
         }
         CompletableFuture<TGMPlayerBalance> future = CompletableFuture.supplyAsync(() -> {
             Long balance = storage.getPlayerBalance(offlinePlayer.getUniqueId());
-            if (balance == null) return null;
+            if (balance == null) balance = 0L;
             TGMPlayerBalance tgmPlayerBalance = new TGMPlayerBalance(offlinePlayer.getUniqueId(), balance);
             cachedBalances.put(offlinePlayer.getUniqueId(), tgmPlayerBalance);
             currentlyLoading.remove(offlinePlayer.getUniqueId());

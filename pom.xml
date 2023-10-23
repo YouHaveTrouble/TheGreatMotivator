@@ -62,6 +62,10 @@
                                     <pattern>com.mysql</pattern>
                                     <shadedPattern>me.youhavetrouble.thegreatmotivator.com.mysql</shadedPattern>
                                 </relocation>
+                                <relocation>
+                                    <pattern>dev.jorel.commandapi</pattern>
+                                    <shadedPattern>me.youhavetrouble.thegreatmotivator.dev.jorel.commandapi</shadedPattern>
+                                </relocation>
                             </relocations>
                         </configuration>
                     </execution>
@@ -127,6 +131,12 @@
             <artifactId>MoneyPitAPI</artifactId>
             <version>1.0.0</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>dev.jorel</groupId>
+            <artifactId>commandapi-bukkit-shade</artifactId>
+            <version>9.2.0</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>
